@@ -1,0 +1,1059 @@
+---
+include:
+  - assembly_line.yml
+---
+modules:
+  - al_courts
+---
+metadata:
+  title: |
+    Notice of Hearing and Petition for Expungement
+  short title: |
+    Petition for Expungement
+  tags:
+    - Other
+  authors:
+    - Minnesota Courts
+---
+mandatory: True
+comment: |
+  Global interview metadata
+variable name: interview_metadata["EXP102"]
+data:
+  al_weaver_version: "1.7.0"
+  generated on: "2022-08-26"
+  title: >-
+    Notice of Hearing and Petition for Expungement
+  short title: >-
+    Petition for Expungement
+  description: |-
+    Use this form to ask the court for a criminal record expungement.
+  original_form: >-
+    https://www.mncourts.gov/GetForms.aspx?c=14&f=207
+  allowed courts: 
+    - "District Court"
+  categories:
+    - "Criminal Expungement"
+  typical role: "defendant"
+  generate download screen: True
+---
+code: |
+  interview_metadata['main_interview_key'] =  'EXP102'
+---
+code: |
+  # This controls the default country and list of states in address field questions
+  AL_DEFAULT_COUNTRY = "US"
+---
+code: |
+  # This controls the default state in address field questions
+  AL_DEFAULT_STATE = "MN"
+---
+code: |
+  github_repo_name =  'docassemble-Exp102'
+---
+code: |
+  interview_short_title = "Ask the court for criminal record expungement"
+---
+code: |
+  al_form_type = "starts_case" 
+---
+objects:
+  - defendant: Individual
+  - users: ALPeopleList.using(ask_number=True,target_number=1)
+  - users_other: ALPeopleList
+  - location: |  
+        DAList.using(object_type=Address,complete_attribute='complete',there_are_any=True)
+  - alias_name: |
+      DAList.using(object_type=Individual,there_are_any=True)
+  - criminal_history: |
+      DAList.using(object_type=Thing,complete_attribute='complete',there_are_any=True)
+  - victim_info: |
+      DAList.using(object_type=Individual,complete_attribute='complete',there_are_any=True)
+  - the_courts: ALCourtLoader.using(filename="Courts.xlsx")
+---
+sections:
+  - review_EXP102: Review your answers
+---
+#################### Interview order #####################
+comment: |
+  Controls order and branching logic for questions specific to this form
+id: interview_order_EXP102
+features:
+  progress bar: True
+  show progress bar percentage: True
+  progress bar method: default
+code: |
+  # Set the allowed courts for this interview
+  nav.set_section('review_EXP102')
+  user_role = 'defendant'
+  EXP102_intro
+  Instructions
+  defendent_name
+  if other_name == False:
+    birthdate
+  if other_name == True:
+    alias_name.gather()
+  birthdate
+  trial_court_county_1
+  the_county
+  users[0].address.address
+  if prior_address == False:
+    reason_for_expungement
+  if prior_address == True:
+    location.gather()
+  reason_for_expungement
+  if prior_record == False:
+    prior_expungement_requests
+  if prior_record == True: 
+    criminal_history.gather()
+  prior_expungement_requests
+  qualify_because
+  offense_to_expunge
+  if identifiable_victim == False:
+    protective_order
+  if identifiable_victim == True:
+    victim_info.gather()
+  protective_order
+  personal_improvement
+  additional_requests
+  my_court
+  display_court
+  #court_county
+  #division
+  #court_code
+  #test
+  #show_display_court
+  users_other[0]
+  docket_number
+  signature_date
+  users[0].phone_number
+  users[0].email
+  interview_order_EXP102 = True
+---
+###################### Main order ######################
+comment: |
+  This block includes the logic for standalone interviews.
+  Delete mandatory: True to include in another interview
+mandatory: True
+code: |
+  al_intro_screen
+  EXP102_intro
+  interview_order_EXP102
+  signature_date
+  # Store anonymous data for analytics / statistics
+  store_variables_snapshot(
+      persistent=True,
+      data={
+          "zip": showifdef("users[0].address.zip"),
+          "reached_interview_end": True,
+      },
+  )
+  EXP102_preview_question
+  basic_questions_signature_flow    
+  users[0].signature
+  EXP102_download
+---
+comment: |
+  This question is used to introduce your interview. Please customize
+id: Notice_of_Hearing_and_Petition_for_Expungement
+continue button field: EXP102_intro
+question: |
+  IMPORTANT!
+subquestion: |
+  Read the Instructions on the next page carefully before completing this form. 
+  
+  Filing to expunge a criminal record is a complicated procedure. If you have any questions or are in   need of more assistance, you should <a href="https://mncourts.gov/Help-Topics/Find-a-Lawyer.aspx" title="Find a Lawyer">Find a Lawyer.</a> The court administrator’s office cannot give you legal advice. 
+
+  You may also want to view the “What is Criminal Expungement” video, as well as the tutorial 
+  on how to complete the expungement forms. These materials are available on the 
+  Minnesota Judicial Branch website at <a href="https://www.mncourts.gov/" title="https://www.mncourts.gov">www.mncourts.gov</a> under HelpTopics / Criminal 
+  Expungement. Contact a <a href="https://www.mncourts.gov/selfhelp" title="Self-Help Center">Self-Help Center</a> if you have questions about these instructions or the criminal expungement process. 
+---
+id: Instructions
+question: |
+  Instructions
+subquestion: |
+  #YOU MAY QUALIFY FOR AN EXPUNGEMENT UNDER MINNESOTA STATUTE ch. 609A IF: 
+  - The charges were dismissed, you were found not guilty, or the case did not otherwise result in a guilty plea or finding, or a conviction. 
+  
+  - You successfully completed the terms of a diversion or stay of adjudication, or were convicted of a crime that qualifies for expungement under Minn. Stat. § 609A.02, subd. 3 and the required amount of time has passed. 
+  
+  - You were charged with a controlled substance offense - the proceedings have been dismissed and discharged. 
+  
+  - You were a juvenile prosecuted as an adult. 
+  
+  - The Board of Pardons has granted you a pardon extraordinary.
+  
+  ##FILE FOR EXPUNGEMENT:
+  - Fill out a separate Petition and Order for each case you want to expunge.
+  
+  - Make copies of the completed forms. You will need these for Service of Process. Make a copy for each agency you will serve.
+  
+  - **Service of Process:**
+  You are responsible to see that service is done properly. Service can be done by another adult, or by you. The server must mail a copy of all required documents and fill out the Proof of Service form. Service must be 
+  complete at least 63 days before the scheduled hearing date.
+  
+  ###SERVICE OF PROCESS
+  ####A. Fill out the Proof of Service form:
+   
+    Fill out a separate Proof of Service form for each court case you want to expunge. Fill in the      government agency addresses on the Proof of Service form. Write the County name and the City name where the offense happened (or where you were arrested), and write the address for each local government agency related to that case. 
+  
+    To serve the MN Dept. of Human Services and/or Dept. of Health, check the box next to their address listed on the form. If you are serving other agencies, write their names and addresses in the extra spaces on the form and check those boxes. 
+  
+    Using the same court information from your criminal case, you must fill in the blanks at the top of the Proof of Service form with the County, Judicial District and Court File Number. 
+  
+    > **STOP! THE SERVER MUST FILL OUT THE OTHER BLANKS ON THE FORM.**
+  
+  ####B. Get copies of your expungement papers ready to be served.
+  
+    You can be serve the papers by first class U.S. mail. Copies of the Proof of 
+  Service do not have to be mailed to the government agencies. 
+  
+  **STEP 1: Make copies of your completed Petition and proposed Order.**
+    Make one copy for each government agency, and make one copy for yourself. Copies can be double sided to save on cost. 
+  
+    Do not count your ORIGINALS as a “copy” in the total. Keep the ORIGINAL Petition and proposed Order to file with the court as soon as possible after service of your papers is complete. 
+  
+  **STEP 2: Address an envelope for each government agency checked on your Proof of Service form.** 
+  _NOTE: If you want to expunge more than one case in the same County, you can put copies for each case into the same envelope addressed to a government office._ 
+  
+  **STEP 3: Add enough postage to each envelope to send by 1st class U.S. Mail.** 
+  You do not need to use “certified” or “return receipt” mail. 
+  
+  > **STOP! DO NOT LET A POST OFFICE EMPLOYEE PUT THE ENVELOPES IN THE MAILBOX!** 
+  
+  **STEP 4: The server mails the envelopes.**
+  The server puts your envelopes in a U.S. mailbox and follows the instructions below to complete the Proof of Service form. 
+   
+  **STEP 5: After mailing, the server must complete the Proof of Service form.** 
+  When the form is completed, you will file it with the court. 
+  
+  **AFTER** the server places your envelopes in a U.S. mailbox, the server must fill out the following blanks on the Proof of Service form: 
+  
+  - The name of the County where the Proof of Service form is signed (can 
+  be different from where case is filed); 
+  
+  - The server’s name in the blank for the person who mailed the envelopes; 
+  
+  - The date they mailed the envelopes. This date must be at least 63 days
+  BEFORE the hearing date.
+  
+  - The name of the City where they mailed the envelopes; and 
+  
+  - Sign the Proof of Service. 
+   
+  If another adult served for you, then after completing these steps, they should give the signed Proof of Service form back to YOU.
+  
+  ####C. Filing The Paperwork With District Court 
+  After copies of the documents have been served on all required agencies and their attorneys, the Notice of Hearing and Petition for Expungement, the proposed order and written proof (Proof of Service) that all agencies have been served must be filed with the court administrator’s office. File your documents as soon as you have completed the service process. 
+   
+  - A filing fee is not required for cases that were “resolved in your favor.” This means no filing fee is required if you were not convicted, were not found guilty, and did not plead guilty in the case, or you were exonerated under Minn. Stat. § 590.11. If the case was “resolved in your favor,” inform court personnel that the filing fee is waived by statute. 
+  - A filing fee is required for cases in which you were convicted or where you were found guilty by the court or entered a guilty plea, even if you were not convicted or the conviction was later vacated. 
+  
+  Check with the court administrator in the county where you are filing for the correct filing fee amount. If you do not qualify for fee waiver under statute, you may ask the court to waive the filing fee by completing a form called “Affidavit for Proceeding In Forma Pauperis” and following the instructions given to you by court personnel. 
+  
+  Write the court date and time on your calendar! The court may not send you a reminder. If you don’t go to your hearing, you might have to start over from the beginning.
+  
+  **REMINDER: CONTACT A LAWYER IF YOU NEED MORE HELP.**
+fields:
+  - I have read and understand the instructions above: i_understand
+    datatype: checkboxes
+    none of the above: False    
+    minlength: 1
+    choices:
+      - I understand and wish to continue
+    validation messages:
+      minlength: |
+        You cannot continue unless you confirm that you have read the information above.        
+continue button field: Instructions
+---
+id: Defendent Name
+Continue button field: defendent_name
+sets:
+    - users[0].name.first
+    - users[0].name.last
+    - users[0].name.middle
+    - users[0].name.suffix
+question: |
+  What is your name?
+fields:
+  - code: |
+      users[0].name_fields()
+---
+on change: 
+  alias_name: |
+    for item in alias_name.complete_elements():
+      item.invalidate_attr('alias_name')
+    alias_name.reset_gathered(mark_incomplete=True)
+---
+question: |
+  Have you gone by any other names?
+yesno: other_name
+---
+question: |
+  What is the ${ ordinal(i) } of your additional names?
+fields:
+  - First Name: alias_name[i].name.first
+  - Last Name: alias_name[i].name.last
+---
+question: |
+  Do you have any others to add?
+yesno: alias_name.there_are_any
+---
+question: |
+  Would you like to add another name?
+yesno: alias_name.there_is_another
+---
+Continue button field: birthdate
+question: |
+  What is your birthdate?
+fields:
+  - "Birthdate": users[0].birthdate
+    datatype: BirthDate
+---
+id: Notice of Hearing
+question: |
+  Notice of Hearing
+subquestion: |
+  Notice To Law Enforcement/Government Agency/Prosecutor: Any objection to expungement in this case   shall be filed with the court as soon as possible, and within 60 days.
+  
+  You can obtain a hearing date from Court Administration to be inserted in this notice. This date must be more than 60 days from the date notice is mailed plus 3 days for mailing. 
+fields:
+   - "County": trial_court_county_1
+     maxlength: 37
+   - "Judicial District": trial_court_district
+     hint: e.g. 1st
+     help: |
+       There are 10 judicial districts in Minnesota.
+       **1st**: McLeod, Sibley, Carver, Scott, Dakota, Le Sueur, Goodhue
+       **2nd**: Ramsey    
+       **3rd**: Rice, Waseca, Steele, Dodge, Olmsted, Wabasha, Winona, Freeborn, Mower, Fillmore, Houston
+       **4th**: Hennepin
+       **5th**: Lincoln, Lyon, Redwood, Brown, Nicollet, Pipestone, Murray, Cottonwood, Watonwan, Blue Earth, Rock, Nobles, Jackson, Martin, Faribault
+       **6th**: St. Louis, Lake, Cook, Carlton
+       **7th**: Clay, Becker, Otter Tail, Wadena, Douglas, Todd, Morrison, Mille Lacs, Stearns, Benton
+       **8th**: Wilkin, Grant, Traverse, Big Stone, Stevens, Pope, Swift, Lac qui Parle, Kandiyohi, Chippewa, Meeker, Yellow Medicine, Renville
+       **9th**: Kittson, Roseau, Lake of the Woods, Marshall, Beltrami, Koochiching, Pennington, Red Lake, Poke, Clearwater, Norman, Mahnomen, Hubbard, Cass, Itasca, Crow Wing, Aitkin
+       **10th**: Pine, Kanabec, Sherburne, Isanti, Chisago, Anoka, Wright, Washington
+     maxlength: 21
+   - "Court File Number": docket_number
+     maxlength: 21
+   - "Hearing date": hearing_date
+     datatype: date
+   - "Hearing time": hearing_time
+     choices:
+       - 08:00 AM
+       - 08:15 AM
+       - 08:30 AM
+       - 08:45 AM
+       - 09:00 AM
+       - 09:15 AM
+       - 09:30 AM
+       - 09:45 AM
+       - 10:00 AM
+       - 10:15 AM
+       - 10:30 AM
+       - 10:45 AM
+       - 11:00 AM
+       - 11:15 AM
+       - 11:30 AM
+       - 11:45 AM
+       - 12:00 PM
+       - 12:15 PM
+       - 12:30 PM
+       - 12:45 PM
+       - 01:00 PM
+       - 01:15 PM
+       - 01:30 PM
+       - 01:45 PM
+       - 02:00 PM
+       - 02:15 PM
+       - 02:30 PM
+       - 02:45 PM
+       - 03:00 PM
+       - 03:15 PM
+       - 03:30 PM
+       - 03:45 PM
+       - 04:00 PM
+       - 04:15 PM
+       - 04:30 PM
+     maxlength: 16
+---
+question: |
+  What county do you live in?
+fields:
+  - Pick a county: the_county
+    code: sorted(the_courts.county_list())
+---
+id: Current Address
+sets:
+  - users[0].address.address
+  - users[0].address.city
+  - users[0].address.zip
+  - users[0].address.unit
+  - users[0].address.state
+  - users[0].address.country
+question: |
+  What is your current address?
+fields:
+  - code: |
+      users[0].address_fields(country_code=AL_DEFAULT_COUNTRY, default_state=AL_DEFAULT_STATE)
+---
+code: |
+  location[i].address
+  location[i].unit
+  location[i].city
+  location[i].state
+  location[i].zip
+  location[i].complete = True
+---
+question: |
+  Do you have any prior addresses to add?
+yesno: prior_address
+---
+id: this block appears to do nothing..
+question: |
+  Do you have any prior addresses to add?
+yesno: location.there_are_any
+---
+question: |
+  What is the address of the
+  ${ ordinal(i) } location?
+fields:
+  - Address: location[i].address
+    address autocomplete: True
+  - Unit: location[i].unit
+    required: False
+  - City: location[i].city
+  - State: location[i].state
+    code: |
+      states_list()
+  - Zip: location[i].zip
+    required: False
+---
+question: |
+  Would you like to add another location?
+yesno: location.there_is_another
+---
+Continue button field: reason_for_expungment
+question: |
+  I am seeking expungement because: 
+subquestion: |
+  Include whether expungement is sought for employment, housing, or licensure purposes, the statutory or other legal authority under which expungement is sought, and state in   detail and with specifics why expungement should be granted.
+fields:
+  - "no label": reason_for_expungement
+    input type: area
+---
+id: Criminal History
+code: | 
+  criminal_history[i].docket_number_2
+  criminal_history[i].trial_court_county_2
+  criminal_history[i].court_state_0
+  criminal_history[i].charge_type_0
+  criminal_history[i].offense_date_1
+  criminal_history[i].is_conviction_yes_is_conviction_no_1
+  criminal_history[i].conviction_date_1
+  criminal_history[i].complete = True
+---
+question: |
+  Do you have a prior criminal record?
+yesno: prior_record
+---
+question: |
+  Criminal History
+subquestion: |
+  List your criminal record including all charges, convictions, stays of adjudication or imposition of sentence and pending actions for misdemeanors, gross misdemeanors or felonies in this state, another state, federal court, or a foreign country, whether the conviction occurred before or after the offense for which expungement is sought.
+  
+  **List the ${ ordinal(i) } crime:**
+fields:
+  - Case Number: criminal_history[i].docket_number_2
+  - County: criminal_history[i].trial_court_county_2
+  - State: criminal_history[i].court_state_0
+    code: states_list()
+  - Charge type: criminal_history[i].charge_type_0 
+  - Offense date: criminal_history[i].offense_date_1
+    datatype: date
+  - Conviction?: criminal_history[i].is_conviction_yes_is_conviction_no_1
+    datatype: yesnoradio
+  - Conviction date: criminal_history[i].conviction_date_1
+    datatype: date
+---
+question: |
+  Do you have any others to add?
+yesno: criminal_history.there_are_any
+---
+question: |
+  Are there any others?
+yesno: criminal_history.there_is_another
+---
+id: Prior Expungement Requests 
+Continue button field: prior_expungement_requests
+question: |
+  Prior Expungement Requests
+subquestion: |
+  List all prior requests for expungement, pardon or sealing of a criminal record, whether for this
+  offense or for any other offense, whether granted or not. Write "N/A" if you have not made a prior     expungement request.
+fields: 
+  - "no label": prior_expungement_requests
+    required: True
+    input type: area
+---
+id: I qualify for expungement because
+Continue button field: qualify_because
+question: |
+  I qualify for expungement because:
+fields:
+  - "A criminal case against me for a controlled substance violation has been dismissed and and the proceedings have been discharged": is_dismissed
+    datatype: yesno
+  - "I was certified or referenced for prosecution as an adult for a crime I committed when I was a juvenile": is_juvenile
+    datatype: yesno
+  - "A criminal matter was resolved in my favor": is_expunged
+    datatype: yesno
+  - "I successfully completed the terms of a diversion program or stay of adjudication and have not been charged with a new crime for at least one year since completion of the diversion program or stay of adjudication": is_programming
+    datatype: yesno
+  - "I was convicted of or received a stayed sentence for a petty misdemeanor or misdemeanor and have not been convicted of a new crime for at least two years since discharge of the sentence for the crime": is_petty_misdemeanor
+    datatype: yesno
+  - "I was convicted of or received a stayed sentence for a gross misdemeanor and have not been convicted of a new crime for at least four years since discharge of the sentence for the crime": is_gross_misdemeanor
+    datatype: yesno
+  - "I was convicted of or received a stayed sentence for a felony violation of an offense listed in Minn. Stat. § 609A.02, subd. 3(b), and have not been convicted of a new crime for at least five years since discharge of the sentence for the crime": is_felony
+    datatype: yesno
+  - "I was convicted of an offense that does not qualify for expungement under Minn. Stat. § 609A.02, subd. 3, but I have rehabilitated myself. The benefit to me outweighs the disadvantage to the public and the burden on the court": is_not_expungeable
+    datatype: yesno
+validation code: |
+  if not (is_dismissed or is_juvenile or is_expunged or is_programming or is_petty_misdemeanor or is_gross_misdemeanor or is_felony or is_not_expungeable):
+    validation_error(word("You need to select at least one item."))
+---
+id: Offense I want to expunge
+Continue button field: offense_to_expunge
+question: |
+  The details of the offense I want to expunge are:
+fields:
+  - "Jurisdiction / City where the offense occurred": offense_address_city
+    maxlength: 34
+  - "Type of Offense": offense_type
+    maxlength: 49
+  - "Date of offense": offense_date
+    datatype: date
+  - "Outcome": dismissal_Date_of_conviction_or_dismissal_1
+    datatype: checkboxes
+    choices:
+      - Conviction
+      - Dismissal
+    minlength: 1
+  - "Date of conviction/dismissal": conviction_dismissal_date
+    datatype: date
+  - "Date of discharge from probation/completion of diversion or stay": discharge_probation_date
+    datatype: date
+---
+id: Victim information
+Continue button field: victim_info
+code: |
+  victim_info[i].name.first
+  victim_info[i].name.last
+  victim_info[i].complete = True
+---
+question: |
+  Were there any identifiable victims in this case?
+yesno: identifiable_victim
+---
+question: |
+  What is the name of the ${ ordinal(i) } victim?
+fields:
+  - First Name: victim_info[i].name.first
+  - Last Name: victim_info[i].name.last
+---
+question: |
+  Do you have any others to add?
+yesno: victim_info.there_are_any
+---
+question: |
+  Would you like to add another name?
+yesno: victim_info.there_is_another
+---
+Continue button field: protective_order
+question: |
+  Protective Order
+subquestion: |
+  Is there a current or prior order for protection, restraining order or other no contact order prohibiting me from contacting the victims?
+fields:
+  - "no label": is_ofp
+    datatype: yesnoradio
+---
+id: Personal rehabilitation
+Continue button field: personal_improvement
+question: |
+  Personal Rehabilitation
+fields: 
+  - "Since this conviction or offense, I have taken the following steps toward personal rehabilitation, including treatment, work, community involvement, or other personal steps": personal_improvement
+    input type: area
+  - "Explain any mitigating or aggravating factors relating to the underlying crime, including your level of participation, the context and circumstances of the underlying crime and what risk, if any, you pose to individuals or society": mitigating_aggravating_factors
+    input type: area
+---
+id: Additional requests
+Continue button field: additional_requests
+question: |
+  Additional Requests
+fields: 
+  - "I request that the court seal any private or confidential data submitted by the responding agencies or jurisdictions": is_confidential
+    datatype: yesno
+  - "I request that if expungement is ordered, each agency and jurisdiction that receives the order must send a letter to me at the address provided confirming receipt of the expungement order and that the record has been expunged": is_receipt_requested
+    datatype: yesno
+# Assembly Line code insert of court and contact info. here
+---
+code: |
+  if the_courts.county_has_one_court(the_county):
+    my_court = the_courts.county_court("my_court", the_county)
+  else:
+    my_court = the_courts.as_court("my_court", court_index)
+---
+question: |
+  What court do you want to file in?
+subquestion: |
+  There is more than one court in your county. Pick the court.
+fields:
+  - Pick a court: court_index
+    code: the_courts.matching_courts_in_county(the_county)
+    #code: the_courts.matching_courts_in_county(the_county, search_columns="division")
+---
+event: display_court
+question: |
+  You selected "${ my_court }"
+subquestion: |
+  ${ my_court.address.block() }
+---
+id: preview EXP102
+question: |
+  Preview your form before you sign it
+subquestion: |
+  Here is a preview of the form you will sign on the next page.   
+  
+  ${ al_court_bundle.as_pdf(key='preview') }
+
+  Click the image to open it in a new tab. Click the "Edit answers" button
+  to edit your answers.
+
+  ${ action_button_html(url_action('review_EXP102'), label='Edit answers', color='info') }
+  
+  Remember to come back to this window to continue and sign your form.
+continue button field: EXP102_preview_question    
+---
+code: |
+  signature_fields = ['users[0].signature']
+---
+code: |
+  # This is a placeholder for the addresses that will be searched
+  # for matching address to court. Edit if court venue is based on 
+  # a different address than the user's
+  addresses_to_search = [user.address for user in users]
+---
+id: EXP102 review screen
+event: review_EXP102
+question: |
+  Review your answers
+review:
+  - Edit: trial_court_district
+    button: |
+      **Judicial District**:
+      ${ trial_court_district }
+  - Edit: docket_number
+    button: |
+      **Court File Number**:
+      ${ docket_number }
+  - Edit: trial_court_county_1
+    button: |
+      **County**:
+      ${ trial_court_county_1 }
+  - Edit: defendant_name
+    button: |
+      **Defendent (first, middle, last)**:
+      ${ defendent_name }
+  - Edit: hearing_date
+    button: |
+      **Hearing date**:
+      ${ hearing_date }
+  - Edit: hearing_time
+    button: |
+      **Hearing time**:
+      ${ hearing_time }
+  - Edit: trial_court
+    button: |
+      **trial_court**
+      % if defined("trial_court.address.county"):
+      * address: ${ trial_court.address.block() }
+      % endif
+  - Edit: users_other[0]
+    button: |
+      **Users other name full**:
+      ${ users_other[0] }
+  - Edit: users.revisit
+    button: |
+      **Users**
+      % for item in users:
+        * ${ item }
+      % endfor
+  - Edit: users[0].address.address
+    button: |
+      **Current Address**:
+      ${ users[0].address.address }
+  - Edit: location.revisit
+    button: |
+      **Additional Address 1**:
+      ${ location }
+  - Edit: reason_for_expungement
+    button: |
+      **Reasons for Expungement**:
+      > ${ single_paragraph(reason_for_expungement) }
+  - Edit: docket_number_2
+    button: |
+      **Case Number**:
+      ${ docket_number_2 }
+  - Edit: trial_court_county_2
+    button: |
+      **County**:
+      ${ trial_court_county_2 }
+  - Edit: trial_court_state_0
+    button: |
+      **State**:
+      ${ trial_court_state_0 }
+  - Edit: charge_type_0
+    button: |
+      **Charge type**:
+      ${ charge_type_0 }
+  - Edit: offense_date_1
+    button: |
+      **Offense date**:
+      ${ offense_date_1 }
+  - Edit: is_conviction_yes_is_conviction_no_1
+    button: |
+      **Conviction Yes/No**:
+      ${ is_conviction_yes_is_conviction_no_1 }
+  - Edit: conviction_date_1
+    button: |
+      **Conviction date**:
+      ${ conviction_date_1 }
+  - Edit: prior_expungement_requests
+    button: |
+      **Prior Expungement Requests**:
+      > ${ single_paragraph(prior_expungement_requests) }
+  - Edit: is_dismissed
+    button: |
+      **A criminal case against me for a controlled substance violation has been dismissed and and the proceedings have been discharged**:
+      ${ word(yesno(is_dismissed)) }
+  - Edit: is_juvenile
+    button: |
+      **I was certified or referenced for prosecution as an adult for a crime I committed when I was a juvenile**:
+      ${ word(yesno(is_juvenile)) }
+  - Edit: is_expunged
+    button: |
+      **A criminal matter was resolved in my favor**:
+      ${ word(yesno(is_expunged)) }
+  - Edit: is_programming
+    button: |
+      **I successfully completed the terms of a diversion program or stay of adjudication and have not been charged with a new crime for at least one year since completion of the diversion program or stay of adjudication**:
+      ${ word(yesno(is_programming)) }
+  - Edit: is_petty_misdemeanor
+    button: |
+      **I was convicted of or received a stayed sentence for a petty misdemeanor or misdemeanor and have not been convicted of a new crime for at least two years since discharge of the sentence for the crime**:
+      ${ word(yesno(is_petty_misdemeanor)) }
+  - Edit: is_gross_misdemeanor
+    button: |
+      **I was convicted of or received a stayed sentence for a gross misdemeanor and have not been convicted of a new crime for at least four years since discharge of the sentence for the crime**:
+      ${ word(yesno(is_gross_misdemeanor)) }
+  - Edit: is_felony
+    button: |
+      **I was convicted of or received a stayed sentence for a felony violation of an offense listed in Minn. Stat. § 609A.02, subd. 3(b), and have not been convicted of a new crime for at least five years since discharge of the sentence for the crime**:
+      ${ word(yesno(is_felony)) }
+  - Edit: is_not_expungeable
+    button: |
+      **I was convicted of an offense that does not qualify for expungement under Minn. Stat. § 609A.02, subd. 3, but I have rehabilitated myself. The benefit to me outweighs the disadvantage to the public and the burden on the court**:
+      ${ word(yesno(is_not_expungeable)) }
+  - Edit: docket_number
+    button: |
+      **Docket number**:
+      ${ docket_number }
+  - Edit: offense_address_city
+    button: |
+      **Jurisdiction / City where the offense occurred**:
+      ${ offense_address_city }
+  - Edit: offense_type
+    button: |
+      **Type of Offense**:
+      ${ offense_type }
+  - Edit: offense_date
+    button: |
+      **Date of offense**:
+      ${ offense_date }
+  - Edit: is_conviction_yes_is_conviction_no_1
+    button: |
+      **Conviction**:
+      ${ word(yesno(is_conviction_yes_is_conviction_no_1)) }
+  - Edit: conviction_date_1
+    button: |
+      **Dismissal**:
+      ${ word(yesno(conviction_date_1)) }
+  - Edit: discharge_probation_date
+    button: |
+      **Date of discharge from probation/completion of diversion or stay**:
+      ${ discharge_probation_date }
+  - Edit: victim_info
+    button: |
+      **Victim Name(s)**:
+      ${ victim_info }
+  - Edit: is_ofp
+    button: |
+      **There is current or prior order for protection, restraining order or other no contact order prohibiting me from contacting the victims**:
+      ${ word(yesnoradio(is_ofp)) }
+  - Edit: personal_improvement
+    button: |
+      **Steps toward personal rehabilitation, including treatment, work, community involvement, or other personal history**:
+      > ${ single_paragraph(personal_improvement) }
+  - Edit: is_confidential
+    button: |
+      **I request that the court seal any private or confidential data submitted by the responding agencies or jurisdictions**:
+      ${ word(yesno(is_confidential)) }
+  - Edit: is_receipt_requested
+    button: |
+      **I request that if expungement is ordered, each agency and jurisdiction that receives the order must send a letter to me at the address provided confirming receipt of the expungement order and that the record has been expunged**:
+      ${ word(yesno(is_receipt_requested)) }
+  - Edit: mitigating_aggravating_factors
+    button: |
+      **Explain any mitigating or aggravating factors relating to the underlying crime, including your level of participation, the context and circumstances of the underlying crime and what risk, if any, you pose to individuals or society**:
+      > ${ single_paragraph(mitigating_aggravating_factors) }
+  - Edit: signature_date
+    button: |
+      **Date of signature**:
+      ${ signature_date }
+  - Edit: trial_court_state
+    button: |
+      **Trial court state**:
+      ${ trial_court_state }
+  - Edit: alias_name
+    button: |
+      **Other legal names or aliases**:
+      ${ alias_name }
+---
+continue button field: location.revisit
+question: |
+  Edit location
+subquestion: |
+  ${ location.table }
+  
+  ${ location.add_action() }
+---
+continue button field: users.revisit
+question: |
+  Edit users
+subquestion: |
+  ${ users.table }
+
+  ${ users.add_action() }
+---
+continue button field: criminal_history.revisit
+question: |
+  Edit criminal history
+subquestion: |
+  ${ criminal_history.table }
+
+  ${ criminal_history.add_action() }
+---
+continue button field: alias_name.revisit
+question: |
+  Edit alias name
+subquestion: |
+  ${ alias_name.table }
+  
+  ${ alias_name.add_action() }
+---
+continue button field: victim_info.revisit
+question: |
+  Edit Victim Information
+subquestion: |
+  ${ victim_info.table }
+  
+  ${ victim_info.add_action() }
+---
+table: users.table
+rows: users
+columns:
+  - Birthdate: |
+      row_item.birthdate if defined("row_item.birthdate") else ""
+  - Signature: |
+      row_item.signature if defined("row_item.signature") else ""
+  - Address: |
+      row_item.address.block() if defined("row_item.address.address") else ""
+  - Phone number: |
+      row_item.phone_number if defined("row_item.phone_number") else ""
+  - Email: |
+      row_item.email if defined("row_item.email") else ""
+edit:
+  - birthdate
+  - signature
+  - address.address
+  - phone_number
+  - email
+confirm: True
+---
+table: location.table
+rows: location
+columns:
+  - Address: |
+      row_item.address.block() if defined("row_item.address.address") else ""
+edit:
+  - address.address
+confirm: True
+---
+table: criminal_history.table
+rows: criminal_history
+columns:
+  - Case Number: |
+      row_item.docket_number_2 if defined("row_item.docket_number_2") else ""
+  - State: |
+      row_item.trial_court_state_0 if defined("row_item.trial_court_state_0") else ""
+  - County: |
+      row_item.trial_court_county_2 if defined("row_item.trial_court_county_2") else ""
+  - Charge Type: |
+      row_item.charge_type_0 if defined("row_item.charge_type_0") else ""
+  - Offense Date: |
+      row_item.offense_date_1 if defined("row_item.offense_date_1") else ""
+  - Conviction: |
+      row_item.is_conviction_yes_is_conviction_no_1 if defined("row_item.is_conviction_yes_is_conviction_no_1") else ""
+  - Conviction Date: |
+      row_item.conviction_date_1 if defined("row_item.conviction_date_1") else ""
+edit:
+  - docket_number_2
+  - trial_court_state_0
+  - trial_court_county_2
+  - charge_type_0
+  - offense_date_1
+  - is_conviction_yes_is_conviction_no_1
+  - conviction_date_1
+confirm: True
+---
+table: alias_name.table
+rows: alias_name
+columns:
+  - First Name: |
+      row_item.alias_name if defined("row_item.alias_name") else ""
+  - Last Name: |
+      row_item.alias_name if defined("row_item.alias_name") else ""
+edit:
+  - alias_name.name.first
+  - alias_name.name.last
+confirm: True
+---
+table: victim_info.table
+rows: victim_info
+columns:
+  - First Name: |
+      row_item.victim_info[i].name.first if defined("row_item.victim_info") else ""
+  - Last Name: |
+      row_item.victim_info[i].name.last if defined("row_item.victim_info") else ""
+edit:
+  - victim_info
+  - victim_info
+confirm: True
+---
+id: download EXP102
+event: EXP102_download
+question: |
+  All done
+subquestion: |
+  Thank you ${users}. Your form is ready to download and deliver.
+  
+  View, download and send your form below. Click the "Edit answers" button to fix any mistakes.
+
+  ${ action_button_html(url_action('review_EXP102'), label='Edit answers', color='info') }
+  
+  
+  ${ al_user_bundle.download_list_html() }
+  
+
+  ${ al_user_bundle.send_button_html(show_editable_checkbox=False) }
+
+progress: 100
+---
+objects:
+  - EXP102_post_interview_instructions: ALDocument.using(title="Instructions", filename="EXP102_next_steps.docx", enabled=True, has_addendum=False, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
+  - EXP102_attachment: ALDocument.using(title="Notice of Hearing and Petition for Expungement", filename="EXP102.pdf", enabled=True, has_addendum=True, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
+---
+objects:
+  - al_user_bundle: ALDocumentBundle.using(elements=[EXP102_post_interview_instructions,EXP102_attachment], filename="EXP102.pdf_package.pdf", title="All forms to download for your records", enabled=True)
+  - al_court_bundle: ALDocumentBundle.using(elements=[EXP102_attachment], filename="EXP102.pdf_package.pdf", title="All forms to download for your records", enabled=True)
+---
+attachments:
+  - name: EXP102 post interview instructions
+    filename: Post-interview-instructions     
+    variable name: EXP102_post_interview_instructions[i]        
+    skip undefined: True
+    docx template file: EXP102_next_steps.docx
+  - name: EXP102 attachment
+    filename: EXP102.pdf     
+    variable name: EXP102_attachment[i]        
+    skip undefined: True
+    pdf template file: EXP102.pdf
+    fields:
+      - "trial_court_district": ${ trial_court_district }
+      - "docket_number_1": ${ docket_number_1 }
+      - "trial_court_county_1": ${ trial_court_county_1 }
+      - "users_name_full1": ${ users_name_full1 }
+      - "hearing_date": ${ hearing_date }
+      - "hearing_time": ${ hearing_time }
+      - "trial_court_address_on_one_line": ${ trial_court.address.on_one_line() }
+      - "users_other_name_full": ${ users_other[0] }
+      - "users_birthdate": ${ users[0].birthdate.format() }
+      - "users_address_on_one_line_1": ${ users_address_on_one_line_1 }
+      - "location": ${ location }
+      - "reason_for_expungement": ${EXP102_attachment.safe_value("reason_for_expungement")}
+      - "docket_number_2": ${ docket_number_2 }
+      - "trial_court_county_2": ${ trial_court_county_2 }
+      - "trial_court_state_0": ${ trial_court_state_0 }
+      - "charge_type_0": ${ charge_type_0 }
+      - "offense_date_1": ${ offense_date_1 }
+      - "is_conviction_yes is_conviction_no_1": ${ is_conviction_yes_is_conviction_no_1 }
+      - "conviction_date_1": ${ conviction_date_1 }
+      - "charge_type_2": ${ charge_type_2 }
+      - "prior_expungement_requests": ${EXP102_attachment.safe_value("prior_expungement_requests")}
+      - "is_dismissed": ${ is_dismissed }
+      - "is_juvenile": ${ is_juvenile }
+      - "is_expunged": ${ is_expunged }
+      - "is_programming": ${ is_programming }
+      - "is_petty_misdemeanor": ${ is_petty_misdemeanor }
+      - "is_gross_misdemeanor": ${ is_gross_misdemeanor }
+      - "is_felony": ${ is_felony }
+      - "is_not_expungeable": ${ is_not_expungeable }
+      - "docket_number": ${ docket_number }
+      - "offense_address_city": ${ offense_address_city }
+      - "offense_type": ${ offense_type }
+      - "offense_date": ${ offense_date }
+      - "conviction or a": ${ conviction_or_a }
+      - "dismissal Date of conviction or dismissal_1": ${ dismissal_Date_of_conviction_or_dismissal_1 }
+      - "conviction_dismissal_date": ${ conviction_dismissal_date }
+      - "discharge_probation_date": ${ discharge_probation_date }
+      - "other_parties_name_full_1": ${ other_parties_name_full_1 }
+      - "is_not_victim": ${ is_not_victim }
+      - "other_parties_name_full_2": ${ other_parties_name_full_2 }
+      - "is_ofp": ${ is_ofp }
+      - "personal_improvement": ${EXP102_attachment.safe_value("personal_improvement")}
+      - "is_confidential": ${ is_confidential }
+      - "is_receipt_requested": ${ is_receipt_requested }
+      - "mitigating_aggravating_factors": ${EXP102_attachment.safe_value("mitigating_aggravating_factors")}
+      - "users1_signature": ${ users[0].signature_if_final(i) }
+      - "signature_date": ${ signature_date }
+      - "trial_court_county": ${ trial_court.address.county }
+      - "trial_court_state": ${ trial_court_state }
+      - "users_name_full2": ${ users_name_full2 }
+      - "users_address_line_one": ${ users[0].address.line_one() }
+      - "users_address_line_two": ${ users[0].address.line_two() }
+      - "users_phone_number": ${ users[0].phone_number }
+      - "users_email": ${ users[0].email }
+---
+code: |
+  EXP102_attachment.overflow_fields["reason_for_expungement"].overflow_trigger = 525
+  EXP102_attachment.overflow_fields["reason_for_expungement"].label = "Reasons for Expungement"
+  EXP102_attachment.overflow_fields["prior_expungement_requests"].overflow_trigger = 518
+  EXP102_attachment.overflow_fields["prior_expungement_requests"].label = "Prior Expungement Requests"
+  EXP102_attachment.overflow_fields["personal_improvement"].overflow_trigger = 518
+  EXP102_attachment.overflow_fields["personal_improvement"].label = "Steps toward personal rehabilitation, including treatment, work, community involvement, or other personal history"
+  EXP102_attachment.overflow_fields["mitigating_aggravating_factors"].overflow_trigger = 525
+  EXP102_attachment.overflow_fields["mitigating_aggravating_factors"].label = "Explain any mitigating or aggravating factors relating to the underlying crime, including your level of participation, the context and circumstances of the underlying crime and what risk, if any, you pose to individuals or society"
+  EXP102_attachment.overflow_fields.gathered = True
