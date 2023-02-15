@@ -991,11 +991,24 @@ attachments:
     pdf template file: EXP102.pdf
     fields:
       - "trial_court_district": |
-          % if trial_court_county_1 in ["Carver", "Dakota"]:
+          % if trial_court_county_1 in ["Carver", "Dakota", "Goodhue", "Le Sueur", "McLeod", "Scott", "Sibley", "Dakota"]:
             1st
-          % elif trial_court_county_1 in []:
+          % elif trial_court_county_1 in ["Ramsey"]:
             2nd
-          #% elif... 
+          % elif trial_court_county_1 in ["Dodge", "Fillmore", "Freeborn", "Houston", "Mower", "Olmsted", "Rice", "Steele", "Wabasha", "Waseca", "Winona"]:
+            3rd
+          % elif trial_court_county_1 in ["Hennepin"]:
+            4th
+          % elif trial_court_county_1 in ["Brown", "Cottonwood", "Faribault", "Jackson", "Lincoln", "Lyon", "Martin", "Murray", "Nicollet", "Nobles", "Pipestone", "Redwood", "Rock", "Watonwan"]:
+            5th
+          % elif trial_court_county_1 in ["Carlton", "Cook", "Lake", "St. Louis"]:
+            6th
+          % elif trial_court_county_1 in ["Becker", "Benton", "Clay", "Douglas", "Mille Lacs", "Morrison", "Otter Tail", "Stearns", "Todd", "Wadena"]:
+            7th
+          % elif trial_court_county_1 in ["Big Stone", "Chippewa", "Grant", "Kandiyohi", "Lac qui Parle", "Meeker", "Pope", "Renville", "Stevens", "Swift", "Traverse", "Wilkin", "Yellow Medicine"]:
+            8th
+          % elif trial_court_county_1 in ["Aitkin", "Beltrami", "Cass", "Clearwater", "Crow Wing", "Hubbard", "Itasca", "Kittson", "Koochiching", "Lake of the Woods", "Mahnomen", "Marshall", "Norman", "Pennington", "Polk", "Red Lake", "Roseau"]:
+            9th
           % endif
       - "docket_number_1": ${ docket_number_1 }
       - "trial_court_county_1": ${ trial_court_county_1 }
