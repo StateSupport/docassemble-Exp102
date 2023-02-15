@@ -1,9 +1,9 @@
 ---
 include:
-  - assembly_line.yml
+  - docassemble.AssemblyLine:assembly_line.yml
 ---
 modules:
-  - al_courts
+  - docassemble.AssemblyLine.al_courts
 ---
 metadata:
   title: |
@@ -95,7 +95,8 @@ code: |
     alias_name.gather()
   birthdate
   trial_court_county_1
-  the_county
+  #the_county
+  county_of_residence
   users[0].address.address
   if prior_address == False:
     reason_for_expungement
@@ -117,12 +118,11 @@ code: |
   personal_improvement
   additional_requests
   my_court
+  the_county
   display_court
   #court_county
   #division
   #court_code
-  #test
-  #show_display_court
   users_other[0]
   docket_number
   signature_date
@@ -286,6 +286,7 @@ on change:
       item.invalidate_attr('alias_name')
     alias_name.reset_gathered(mark_incomplete=True)
 ---
+id: Defendent alias name
 question: |
   Have you gone by any other names?
 yesno: other_name
@@ -304,6 +305,7 @@ question: |
   Would you like to add another name?
 yesno: alias_name.there_is_another
 ---
+id: Birthdate
 Continue button field: birthdate
 question: |
   What is your birthdate?
@@ -320,22 +322,7 @@ subquestion: |
   You can obtain a hearing date from Court Administration to be inserted in this notice. This date must be more than 60 days from the date notice is mailed plus 3 days for mailing. 
 fields:
    - "County": trial_court_county_1
-     maxlength: 37
-   - "Judicial District": trial_court_district
-     hint: e.g. 1st
-     help: |
-       There are 10 judicial districts in Minnesota.
-       **1st**: McLeod, Sibley, Carver, Scott, Dakota, Le Sueur, Goodhue
-       **2nd**: Ramsey    
-       **3rd**: Rice, Waseca, Steele, Dodge, Olmsted, Wabasha, Winona, Freeborn, Mower, Fillmore, Houston
-       **4th**: Hennepin
-       **5th**: Lincoln, Lyon, Redwood, Brown, Nicollet, Pipestone, Murray, Cottonwood, Watonwan, Blue Earth, Rock, Nobles, Jackson, Martin, Faribault
-       **6th**: St. Louis, Lake, Cook, Carlton
-       **7th**: Clay, Becker, Otter Tail, Wadena, Douglas, Todd, Morrison, Mille Lacs, Stearns, Benton
-       **8th**: Wilkin, Grant, Traverse, Big Stone, Stevens, Pope, Swift, Lac qui Parle, Kandiyohi, Chippewa, Meeker, Yellow Medicine, Renville
-       **9th**: Kittson, Roseau, Lake of the Woods, Marshall, Beltrami, Koochiching, Pennington, Red Lake, Poke, Clearwater, Norman, Mahnomen, Hubbard, Cass, Itasca, Crow Wing, Aitkin
-       **10th**: Pine, Kanabec, Sherburne, Isanti, Chisago, Anoka, Wright, Washington
-     maxlength: 21
+     code: sorted(the_courts.county_list())
    - "Court File Number": docket_number
      maxlength: 21
    - "Hearing date": hearing_date
@@ -379,10 +366,11 @@ fields:
        - 04:30 PM
      maxlength: 16
 ---
+id: County
 question: |
   What county do you live in?
 fields:
-  - Pick a county: the_county
+  - Pick a county: county_of_residence
     code: sorted(the_courts.county_list())
 ---
 id: Current Address
@@ -407,6 +395,7 @@ code: |
   location[i].zip
   location[i].complete = True
 ---
+id: Prior Address
 question: |
   Do you have any prior addresses to add?
 yesno: prior_address
@@ -435,6 +424,7 @@ question: |
   Would you like to add another location?
 yesno: location.there_is_another
 ---
+id: Reason for Expungement
 Continue button field: reason_for_expungment
 question: |
   I am seeking expungement because: 
@@ -570,6 +560,7 @@ question: |
   Would you like to add another name?
 yesno: victim_info.there_is_another
 ---
+id: OFP
 Continue button field: protective_order
 question: |
   Protective Order
@@ -604,18 +595,25 @@ code: |
   if the_courts.county_has_one_court(the_county):
     my_court = the_courts.county_court("my_court", the_county)
   else:
+    court_index
     my_court = the_courts.as_court("my_court", court_index)
 ---
+id: Filing Court
 question: |
-  What court do you want to file in?
-subquestion: |
-  There is more than one court in your county. Pick the court.
+  What county do you want to file in?
 fields:
-  - Pick a court: court_index
+  - Pick a court: the_county
+    code: sorted(the_courts.county_list())
+---
+question: |
+  There is more than one court in your county. Pick the court below.
+fields:
+  - "no label": court_index
+    #code: sorted(the_courts.county_list())
     code: the_courts.matching_courts_in_county(the_county)
     #code: the_courts.matching_courts_in_county(the_county, search_columns="division")
 ---
-event: display_court
+continue button field: display_court
 question: |
   You selected "${ my_court }"
 subquestion: |
@@ -992,7 +990,13 @@ attachments:
     skip undefined: True
     pdf template file: EXP102.pdf
     fields:
-      - "trial_court_district": ${ trial_court_district }
+      - "trial_court_district": |
+          % if trial_court_county_1 in ["Carver", "Dakota"]:
+            1st
+          % elif trial_court_county_1 in []:
+            2nd
+          #% elif... 
+          % endif
       - "docket_number_1": ${ docket_number_1 }
       - "trial_court_county_1": ${ trial_court_county_1 }
       - "users_name_full1": ${ users_name_full1 }
