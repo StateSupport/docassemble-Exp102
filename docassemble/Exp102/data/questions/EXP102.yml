@@ -1,9 +1,9 @@
 ---
 include:
-  - assembly_line.yml
+  - docassemble.AssemblyLine:assembly_line.yml
 ---
 modules:
-  - al_courts
+  - docassemble.AssemblyLine.al_courts
 ---
 metadata:
   title: |
@@ -72,7 +72,28 @@ objects:
   - the_courts: ALCourtLoader.using(filename="Courts.xlsx")
 ---
 sections:
-  - review_EXP102: Review your answers
+  - EXP102_intro: Introduction
+  - i_understand: Instructions
+  #- defendant_name: Personal Information
+  - defendant_name: Name
+  - other_name: Additional Names
+  - birthdate: Birthdate
+  - notice_of_hearing: Notice of Hearing
+  - county_of_residence: County of Residence
+  - address: Address
+  - prior_address: Address History
+  - reason_for_expungement: Reason for Expungement
+  - prior_record: Criminal History
+  - prior_expungement_requests: Prior Expungement Requests
+  - qualify_because: Qualify for Expungement
+  - offense_to_expunge: Offense Expunging
+  - victim_info: Victim Information
+  - is_ofp: Protective Order
+  - personal_improvement: Personal Rehabilitation
+  - additional_requests: Additional Requests
+  - filing_court: Filing Court
+  - contact_info: Contact Information
+  #- review_EXP102: Review your answers
 ---
 #################### Interview order #####################
 comment: |
@@ -95,7 +116,8 @@ code: |
     alias_name.gather()
   birthdate
   trial_court_county_1
-  the_county
+  county_of_residence
+  #the_county
   users[0].address.address
   if prior_address == False:
     reason_for_expungement
@@ -117,17 +139,19 @@ code: |
   personal_improvement
   additional_requests
   my_court
+  the_county
   display_court
   #court_county
   #division
   #court_code
   #test
   #show_display_court
-  users_other[0]
-  docket_number
-  signature_date
-  users[0].phone_number
-  users[0].email
+  #users_other[0]
+  #docket_number
+  #signature_date
+  #users[0].phone_number
+  #users[0].email
+  contact_info
   interview_order_EXP102 = True
 ---
 ###################### Main order ######################
@@ -144,7 +168,7 @@ code: |
   store_variables_snapshot(
       persistent=True,
       data={
-          "zip": showifdef("users[0].address.zip"),
+          "zip": showifdef("users[0].address.postal_code"),
           "reached_interview_end": True,
       },
   )
@@ -168,6 +192,7 @@ subquestion: |
   on how to complete the expungement forms. These materials are available on the 
   Minnesota Judicial Branch website at <a href="https://www.mncourts.gov/" title="https://www.mncourts.gov">www.mncourts.gov</a> under HelpTopics / Criminal 
   Expungement. Contact a <a href="https://www.mncourts.gov/selfhelp" title="Self-Help Center">Self-Help Center</a> if you have questions about these instructions or the criminal expungement process. 
+section: EXP102_intro
 ---
 id: Instructions
 question: |
@@ -264,8 +289,9 @@ fields:
       - I understand and wish to continue
     validation messages:
       minlength: |
-        You cannot continue unless you confirm that you have read the information above.        
-continue button field: Instructions
+        You cannot continue unless you confirm that you have read the information above.  
+section: i_understand
+#continue button field: Instructions
 ---
 id: Defendent Name
 Continue button field: defendent_name
@@ -279,6 +305,7 @@ question: |
 fields:
   - code: |
       users[0].name_fields()
+section: defendant_name
 ---
 on change: 
   alias_name: |
@@ -286,9 +313,11 @@ on change:
       item.invalidate_attr('alias_name')
     alias_name.reset_gathered(mark_incomplete=True)
 ---
+id: Defendent alias name
 question: |
   Have you gone by any other names?
 yesno: other_name
+section: other_name
 ---
 question: |
   What is the ${ ordinal(i) } of your additional names?
@@ -304,14 +333,18 @@ question: |
   Would you like to add another name?
 yesno: alias_name.there_is_another
 ---
+id: Birthdate
 Continue button field: birthdate
 question: |
   What is your birthdate?
 fields:
   - "Birthdate": users[0].birthdate
     datatype: BirthDate
+    max: ${ today() }
+section: birthdate
 ---
 id: Notice of Hearing
+continue button field: notice_of_hearing
 question: |
   Notice of Hearing
 subquestion: |
@@ -320,6 +353,7 @@ subquestion: |
   You can obtain a hearing date from Court Administration to be inserted in this notice. This date must be more than 60 days from the date notice is mailed plus 3 days for mailing. 
 fields:
    - "County": trial_court_county_1
+     code: sorted(the_courts.county_list())
      maxlength: 37
    - "Judicial District": trial_court_district
      hint: e.g. 1st
@@ -378,14 +412,18 @@ fields:
        - 04:15 PM
        - 04:30 PM
      maxlength: 16
+section: notice_of_hearing
 ---
+id: County
 question: |
   What county do you live in?
 fields:
-  - Pick a county: the_county
+  - Pick a county: county_of_residence
     code: sorted(the_courts.county_list())
+section: county_of_residence
 ---
 id: Current Address
+continue button field: address
 sets:
   - users[0].address.address
   - users[0].address.city
@@ -398,6 +436,7 @@ question: |
 fields:
   - code: |
       users[0].address_fields(country_code=AL_DEFAULT_COUNTRY, default_state=AL_DEFAULT_STATE)
+section: address
 ---
 code: |
   location[i].address
@@ -407,6 +446,7 @@ code: |
   location[i].zip
   location[i].complete = True
 ---
+id: Prior Address
 question: |
   Do you have any prior addresses to add?
 yesno: prior_address
@@ -428,13 +468,15 @@ fields:
   - State: location[i].state
     code: |
       states_list()
-  - Zip: location[i].zip
+  - Zip: location[i].postal_code
     required: False
 ---
 question: |
   Would you like to add another location?
 yesno: location.there_is_another
+section: prior_address
 ---
+id: Reason for Expungement
 Continue button field: reason_for_expungment
 question: |
   I am seeking expungement because: 
@@ -443,6 +485,7 @@ subquestion: |
 fields:
   - "no label": reason_for_expungement
     input type: area
+section: reason_for_expungement
 ---
 id: Criminal History
 code: | 
@@ -458,6 +501,7 @@ code: |
 question: |
   Do you have a prior criminal record?
 yesno: prior_record
+section: prior_record
 ---
 question: |
   Criminal History
@@ -468,15 +512,244 @@ subquestion: |
 fields:
   - Case Number: criminal_history[i].docket_number_2
   - County: criminal_history[i].trial_court_county_2
+    code: |
+      sorted(the_courts.county_list())
   - State: criminal_history[i].court_state_0
     code: states_list()
   - Charge type: criminal_history[i].charge_type_0 
+    choices:
+      - Abduction 
+      - Abuse of Toxic Substance
+      - Adulteration 
+      - Adulteration by Bodily Fluid
+      - Adultery
+      - Aggravated Forgery
+      - Aggravated Robbery
+      - Aiding an Offender
+      - Arson in the First Degree
+      - Arson in the Second Degree
+      - Arson in the Third Degree
+      - Arson in the Fourth Degree
+      - Arson in the Fifth Degree
+      - Assault in the First Degree
+      - Assault in the Second Degree
+      - Assault in the Third Degree
+      - Assault in the Fourth Degree
+      - Assault of Unborn Child in the First Degree
+      - Assault of Unborn Child in the Second Degree
+      - Assault of Unborn Child in the Third Degree
+      - Assaulting or Harming Police Horse
+      - Attempt to Coerce
+      - Bestiality
+      - Bigamy
+      - Bribery
+      - Bribery of Participant or Official in Contest
+      - Bringing Stolen Goods Into State
+      - Burglarly
+      - Cellular Telephone Counterfeiting
+      - Check Forgery; Offering Forged Check
+      - Child Torture
+      - Civil Disorder
+      - Coercion
+      - Commercial Bribery
+      - Communication of Sexually Explicit Materials to Children
+      - Computer Crime
+      - Computer Damage
+      - Computer Theft
+      - Concealing Criminal Proceeds
+      - Concealing Identity
+      - Conspiracy
+      - Corruptly Influencing Legislator
+      - Counterfeited Intellectual Property
+      - Counterfeiting of Currency
+      - Crime Committed for Benefit of Gang
+      - Crimes Against Railroad Employees and Property
+      - Crimes Against Vulnerable Adults
+      - Crimes Committed in Furtherance of Terrorism
+      - Crimes Involving Transit; Shooting at Transit Vehicle
+      - Criminal Abuse
+      - Criminal Defamation
+      - Criminal Neglect
+      - Criminal Sexual Conduct in the First Degree
+      - Criminal Sexual Conduct in the Second Degree
+      - Criminal Sexual Conduct in the Third Degree
+      - Criminal Sexual Conduct in the Fourth Degree
+      - Criminal Sexual Conduct in the Fifth Degree
+      - Criminal Sexual Predatory Conduct
+      - Criminal Use of Encryption
+      - Criminal Use of Real Property
+      - Criminal Vehicular Homicide
+      - Criminal Vehicular Operation; Bodily Harm
+      - Criminal Vehicular Operation; Unborn Child
+      - Damage or Theft to Energy Transmission or Telecommunications Equipment
+      - Damage to Property
+      - Damage to Property of Critical Public Service Facilities, Utilities, and Pipelines
+      - Dangerous Weapons
+      - Deceptive or Unfair Trade Practices; Elderly or Disabled Victims
+      - Depriving Another of Custodial or Parental Rights
+      - Disarming Peace Officer
+      - Discharging a Later at an Aircraft
+      - Disorderly Conduct
+      - Disorderly House
+      - Domestic Assault
+      - Domestic Assault by Strangulation
+      - Embezzlement of Public Funds
+      - Emergency Communications; Kidnapping
+      - Engaging in Business of Concealing Criminal Proceeds
+      - Escape from Custody
+      - Event Tickets; Prohibited Acts
+      - Excluded Fires
+      - Explosive and Incendiary Devices
+      - Exposing Domestic Animals to Disease
+      - Exposure of Unused Refrigerator or Container to Children
+      - Facilitating Access to Computer Security System
+      - Failure to Appear
+      - Failure to Pay Over State Funds
+      - Failure to Report
+      - False Certification by Notary Public
+      - False Fire Alarms; Tampering With or Injuring Fire Alarm System
+      - False Imprisonment
+      - False Information to Financial Institution
+      - False Information to News Media
+      - False Tax Statement
+      - False Traffic Signal
+      - Falsely Impersonating Another
+      - Falsely Reporting Child Abuse
+      - Falsely Reporting Crime
+      - Female Genital Mutilation
+      - Financial Exploitation of Vulnerable Adult
+      - Financial Transaction Card Fraud
+      - Firearms; Removal or Alteration of Serial Number
+      - First Degree Burgarly of Dwelling
+      - Fleeing Peace Officer; Motor Vehicle; Other
+      - Forgery
+      - Fornication
+      - Fraud in Obtaining Credit
+      - Fraudulent Drivers Licenses and Identification Cards
+      - Fraudulent or Otherwise Improper Financing Statements
+      - Fraudulent Statements
+      - Funeral or Burial Service; Prohibited Acts
+      - Gambling
+      - Great Bodily Harm Caused by Distribution of Drugs
+      - Harassment; Restraining Order
+      - Harassment; Stalking
+      - Harm Caused by Dog
+      - Identity Theft
+      - Impersonating a Military Service Member, Veteran, or Public Official
+      - Impersonating a Peace Officer
+      - Incest
+      - Injury or Death of Unborn Child in Commission of Crime
+      - Insurance Fraud
+      - Interference With Dead Body; Reporting
+      - Interference With Emergency Communications
+      - Interference With Privacy
+      - Interference With Property in Official Custody
+      - Interfering With Cable Communications Systems
+      - Interfering With Internet Ticket Sales
+      - Issuance of Dishonored Checks
+      - Kidnapping
+      - Killing or Harming Public Safety Dog
+      - Knowing Transfer of Communicable Disease
+      - Labor or Sex Trafficking Crimes
+      - Labor Trafficking
+      - Lawful Gambling Fraud
+      - Leaving State to Evade Establishment of Paternity
+      - Letter, Telegram, or Package; Opening; Harassment
+      - Loitering With Intent to Participate in Prostitution
+      - Machine Guns and Short-Barreled Shotguns
+      - Mail Theft
+      - Malicious Punishment of Child
+      - Manslaughter in the First Degree
+      - Manslaughter in the Second Degree
+      - Manslaughter of Unborn Child in the First Degree
+      - Manslaughter of Unborn Child in the Second Degree
+      - Medical Assistance Fraud
+      - Misconduct of Judicial or Hearing Officer
+      - Misconduct of Junk or Secondhand Dealer
+      - Misconduct of Public Officer or Employee
+      - Misrepresentation of Service Animal
+      - Mistreatment of Persons Confined
+      - Mistreatment of Residents or Patients
+      - Misusing Credit Card to Secure Services
+      - Motor Vehicle Tampering
+      - Murder in the First Degree
+      - Murder in the Second Degree
+      - Murder in the Third Degree
+      - Murder of Unborn Child in the First Degree
+      - Murder of Unborn Child in the Second Degree
+      - Murder of Unborn Child in the Third Degree
+      - Neglect or Endangerment of Child
+      - Negligent Fires; Dangerous Smoking
+      - Negligent Storage of Firearms
+      - Obscene or Harassing Telephone Calls
+      - Obstructing Legal Process, Arrest, or Firefighting
+      - Obtaining Signature by False Pretense
+      - Patrons; Prostitutes; Housing Individuals Engaged in Prostitution
+      - Perjury
+      - Permissive Inference; Firearms in Automobiles
+      - Permitting False Claims Against Government
+      - Permitting Public Nuisance
+      - Physical Interference With Safe Access to Health Care
+      - Possession of Burglarly or Theft Tools
+      - Possession of Code-Grabbing Devices
+      - Possession of Shoplifting Gear
+      - Possession or Sale of Stolen or Counterfeit Check
+      - Precious Metal and Scrap Metal Dealers; Receiving Stolen Property
+      - Presence at Unlawful Assembly
+      - Presenting False Claims to Public Officer or Body
+      - Prostitution and Sex Trafficking
+      - Prostitution Crimes Committed in School or Park Zones
+      - Public Nuisance
+      - Public Office; Illegally Assuming; Nonsurrender
+      - Public Officer; Unauthorized Compensation
+      - Racketeering
+      - Real and Simulated Weapons of Mass Destruction
+      - Receiving Stolen Property
+      - Recording, Filing of Forged Instrument
+      - Release; Failure to Appear
+      - Residential Mortgage Fraud
+      - Riot
+      - Rustling and Livestock Theft
+      - Sale of Nicotine Delivery Products to Persons Under Age 21
+      - Sale of Tobacco to Persons Under Age 21
+      - Sexual Exortion
+      - Simple Robbery
+      - Simulating Legal Process
+      - Sodomy
+      - Soliciation of Children to Engage in Sexual Conduct
+      - Soliciation of Juveniles
+      - Soliciation of Mentally Impaired Persons
+      - Solicitation, Inducement, and Promotion of Prostitution; Sex Trafficking
+      - State Lottery Fraud
+      - Tampering With Witness
+      - Telecommunications and Information Service Fraud
+      - Theft
+      - Threats of Violence
+      - Treason
+      - Trespass
+      - Trespass on Critical Public Service Facility; Utility; or Pipeline
+      - Unauthorized Computer Access
+      - Unauthorized Release of Animals
+      - Unlawful Assembly
+      - Unlawful Conduct With Respect to Documents in Furtherance of Labor or Sex Trafficking
+      - Unlawful Deposit of Garbage, Litter, or Like
+      - Unlawful Ouster or Exclusion
+      - Unlawful Smoking
+      - Use of Drugs to Injure or Facilitate Crime
+      - Use of Ignition Devices
+      - Use of Police Radios During Commission of Crime
+      - Warning Subject of Investigation
+      - Warning Subject of Surveillance or Search
+      - Wildfire Arson
+      - Wrongful Employment at a Child Care Center
   - Offense date: criminal_history[i].offense_date_1
     datatype: date
+    max: ${ today() }
   - Conviction?: criminal_history[i].is_conviction_yes_is_conviction_no_1
     datatype: yesnoradio
   - Conviction date: criminal_history[i].conviction_date_1
     datatype: date
+    max: ${ today() }
 ---
 question: |
   Do you have any others to add?
@@ -497,6 +770,7 @@ fields:
   - "no label": prior_expungement_requests
     required: True
     input type: area
+section: prior_expungement_requests
 ---
 id: I qualify for expungement because
 Continue button field: qualify_because
@@ -522,6 +796,7 @@ fields:
 validation code: |
   if not (is_dismissed or is_juvenile or is_expunged or is_programming or is_petty_misdemeanor or is_gross_misdemeanor or is_felony or is_not_expungeable):
     validation_error(word("You need to select at least one item."))
+section: qualify_because
 ---
 id: Offense I want to expunge
 Continue button field: offense_to_expunge
@@ -534,6 +809,7 @@ fields:
     maxlength: 49
   - "Date of offense": offense_date
     datatype: date
+    max: ${ today() }
   - "Outcome": dismissal_Date_of_conviction_or_dismissal_1
     datatype: checkboxes
     choices:
@@ -542,8 +818,11 @@ fields:
     minlength: 1
   - "Date of conviction/dismissal": conviction_dismissal_date
     datatype: date
+    max: ${ today() }
   - "Date of discharge from probation/completion of diversion or stay": discharge_probation_date
     datatype: date
+    max: ${ today() }
+section: offense_to_expunge
 ---
 id: Victim information
 Continue button field: victim_info
@@ -555,6 +834,7 @@ code: |
 question: |
   Were there any identifiable victims in this case?
 yesno: identifiable_victim
+section: victim_info
 ---
 question: |
   What is the name of the ${ ordinal(i) } victim?
@@ -570,6 +850,7 @@ question: |
   Would you like to add another name?
 yesno: victim_info.there_is_another
 ---
+id: OFP
 Continue button field: protective_order
 question: |
   Protective Order
@@ -578,6 +859,7 @@ subquestion: |
 fields:
   - "no label": is_ofp
     datatype: yesnoradio
+section: is_ofp
 ---
 id: Personal rehabilitation
 Continue button field: personal_improvement
@@ -588,6 +870,7 @@ fields:
     input type: area
   - "Explain any mitigating or aggravating factors relating to the underlying crime, including your level of participation, the context and circumstances of the underlying crime and what risk, if any, you pose to individuals or society": mitigating_aggravating_factors
     input type: area
+section: personal_improvement
 ---
 id: Additional requests
 Continue button field: additional_requests
@@ -598,28 +881,74 @@ fields:
     datatype: yesno
   - "I request that if expungement is ordered, each agency and jurisdiction that receives the order must send a letter to me at the address provided confirming receipt of the expungement order and that the record has been expunged": is_receipt_requested
     datatype: yesno
+section: additional_requests
 # Assembly Line code insert of court and contact info. here
 ---
 code: |
   if the_courts.county_has_one_court(the_county):
     my_court = the_courts.county_court("my_court", the_county)
   else:
+    court_index
     my_court = the_courts.as_court("my_court", court_index)
 ---
+id: Filing Court
+continue button field: filing_court
 question: |
   What court do you want to file in?
-subquestion: |
-  There is more than one court in your county. Pick the court.
 fields:
-  - Pick a court: court_index
-    code: the_courts.matching_courts_in_county(the_county)
-    #code: the_courts.matching_courts_in_county(the_county, search_columns="division")
+  - Pick a court: the_county
+    code: sorted(the_courts.county_list())
+section: filing_court
 ---
-event: display_court
+question: |
+  There is more than one court in your county. Pick the court below.
+fields:
+  - "no label": court_index
+    #code: sorted(the_courts.county_list())
+    code: the_courts.matching_courts_in_county(the_county)
+---
+continue button field: display_court
 question: |
   You selected "${ my_court }"
 subquestion: |
   ${ my_court.address.block() }
+---
+id: your contact information
+continue button field: contact_info
+question: |
+  What is your contact information?
+subquestion: |
+  Include at least **one** way to reach you other than by mail.
+
+  ${ collapse_template(why_contact_info_needed_template) }
+fields:  
+  - Mobile number: users[0].mobile_number
+    required: False
+  #phone_number = phone_number_formatted(phone_number)
+  - Other phone number: users[0].phone_number
+    required: False
+  - Email address: users[0].email    
+    datatype: email
+    required: False
+  - Other ways to reach you: users[0].other_contact_method
+    input type: area
+    required: False
+    help: |
+      If you do not have a phone number or email, provide
+      specific contact instructions. For example, use a friend's phone number.
+      But the friend must be someone you can rely on to give you a
+      message.
+validation code: |
+  if not phone_number_is_valid(users[0].mobile_number):
+    validation_error("Please enter a phone number in the format (xxx) xxx-xxxx", field="users[0].mobile_number")
+  if not phone_number_is_valid(users[0].phone_number):
+    validation_error("Please enter a phone number in the format (xxx) xxx-xxxx", field="users[0].phone_number")
+  if (not showifdef('users[0].phone_number') and \
+      (not showifdef('users[0].mobile_number')) and \
+      (not showifdef('users[0].email')) and \
+      (not showifdef('users[0].other_contact_method'))):
+    validation_error(word("You need to provide at least one contact method."), field="users[0].other_contact_method")
+section: contact_info
 ---
 id: preview EXP102
 question: |
@@ -992,7 +1321,26 @@ attachments:
     skip undefined: True
     pdf template file: EXP102.pdf
     fields:
-      - "trial_court_district": ${ trial_court_district }
+      - "trial_court_district": |
+          % if trial_court_county_1 in ["Carver", "Dakota", "Goodhue", "Le Sueur", "McLeod", "Scott", "Sibley", "Dakota"]:
+            First Judicial District
+          % elif trial_court_county_1 in ["Ramsey"]:
+            Second Judicial District
+          % elif trial_court_county_1 in ["Dodge", "Fillmore", "Freeborn", "Houston", "Mower", "Olmsted", "Rice", "Steele", "Wabasha", "Waseca", "Winona"]:
+            Third Judicial District
+          % elif trial_court_county_1 in ["Hennepin"]:
+            Fourth Judicial District
+          % elif trial_court_county_1 in ["Brown", "Cottonwood", "Faribault", "Jackson", "Lincoln", "Lyon", "Martin", "Murray", "Nicollet", "Nobles", "Pipestone", "Redwood", "Rock", "Watonwan"]:
+            Fifth Judicial District
+          % elif trial_court_county_1 in ["Carlton", "Cook", "Lake", "St. Louis"]:
+            Sixth Judicial District
+          % elif trial_court_county_1 in ["Becker", "Benton", "Clay", "Douglas", "Mille Lacs", "Morrison", "Otter Tail", "Stearns", "Todd", "Wadena"]:
+            Seventh Judicial District
+          % elif trial_court_county_1 in ["Big Stone", "Chippewa", "Grant", "Kandiyohi", "Lac qui Parle", "Meeker", "Pope", "Renville", "Stevens", "Swift", "Traverse", "Wilkin", "Yellow Medicine"]:
+            Eighth Judicial District
+          % elif trial_court_county_1 in ["Aitkin", "Beltrami", "Cass", "Clearwater", "Crow Wing", "Hubbard", "Itasca", "Kittson", "Koochiching", "Lake of the Woods", "Mahnomen", "Marshall", "Norman", "Pennington", "Polk", "Red Lake", "Roseau"]:
+            Ninth Judicial District
+          % endif
       - "docket_number_1": ${ docket_number_1 }
       - "trial_court_county_1": ${ trial_court_county_1 }
       - "users_name_full1": ${ users_name_full1 }
