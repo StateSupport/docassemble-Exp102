@@ -54,8 +54,7 @@ setup(name='docassemble.Exp102',
       url='https://courtformsonline.org',
       packages=find_packages(),
       namespace_packages=['docassemble'],
-      install_requires=['docassemble.AssemblyLine>=2.26.0'],
+      install_requires=['docassemble.ALToolbox>=0.9.0', 'docassemble.AssemblyLine>=2.26.0', 'docassemble.BrandingMN', 'docassemble.Exp102', 'docassemble.GithubFeedbackForm>=0.2.1'],
       zip_safe=False,
       package_data=find_package_data(where='docassemble/Exp102/', package='docassemble.Exp102'),
      )
-

@@ -68,11 +68,8 @@ objects:
   - criminal_history: |
       DAList.using(object_type=Thing,complete_attribute='complete',there_are_any=True)
   - victim_info: |
-     DAList.using(object_type=Individual,complete_attribute='complete',there_are_any=True)
+      DAList.using(object_type=Individual,complete_attribute='complete',there_are_any=True)
   - the_courts: ALCourtLoader.using(filename="Courts.xlsx")
-  #- charge_type_0: |
-      #DAList.using(filename="crime_types.xlsx")
-  #- criminal_history[i].charge_type_0: ALCourtLoader.using(filename="crime_types.xlsx")
 ---
 sections:
   - EXP102_intro: Introduction
@@ -103,7 +100,6 @@ comment: |
   Controls order and branching logic for questions specific to this form
 id: interview_order_EXP102
 features:
-  navigation: True
   progress bar: True
   show progress bar percentage: True
   progress bar method: default
@@ -121,6 +117,7 @@ code: |
   birthdate
   trial_court_county_1
   county_of_residence
+  #the_county
   users[0].address.address
   if prior_address == False:
     reason_for_expungement
@@ -143,14 +140,18 @@ code: |
   additional_requests
   my_court
   the_county
-  #filing_court
   display_court
-  contact_info
+  #court_county
+  #division
+  #court_code
+  #test
+  #show_display_court
   #users_other[0]
   #docket_number
   #signature_date
   #users[0].phone_number
   #users[0].email
+  contact_info
   interview_order_EXP102 = True
 ---
 ###################### Main order ######################
@@ -176,55 +177,6 @@ code: |
   users[0].signature
   EXP102_download
 ---
-id: basic questions intro screen
-decoration: form-lineal
-question: |
-  ${interview_short_title} 
-#${ AL_ORGANIZATION_TITLE}
-subquestion: |
-  % if form_approved_for_email_filing:
-  ${ AL_ORGANIZATION_TITLE } can help you complete and file court forms in 3 steps:
-  % else:
-  ${ AL_ORGANIZATION_TITLE } can help you complete and download forms in 3 steps:
-  % endif
-  
-  Step 1. Answer questions that will fill in your form for you.<br>
-  Step 2. Preview the completed form.<br>
-  % if form_approved_for_email_filing:
-  Step 3. Email the form to the court using this secure website and save copies
-  for yourself for later reference.  
-  % elif al_form_type in ['starts_case','existing_case','appeal']:
-  Step 3. Download and print the final form. You will need to deliver it
-  to the court on your own.
-  % else:
-  Step 3. Download and print the final form. You will need to deliver it 
-  on your own.
-  % endif
-  
-  This site is not a lawyer. If you would like a lawyer, find [your local
-  legal aid provider](https://www.lsc.gov/what-legal-aid/find-legal-aid).
-  
-  Tap the {green words} in any screen for a definition or more information.
-  
-#% if chat_partners_available().help:
-#Live help is currently available in this interview. Click the speech bubble
-#(:comment-alt:) in the navigation bar to connect to a live advocate for help.
-#% endif
-fields:
-  - To continue, you must accept our [terms of use](${ AL_ORGANIZATION_HOMEPAGE }/privacy/): acknowledged_information_use
-    datatype: checkboxes
-    none of the above: False    
-    minlength: 1
-    choices:
-      - I accept the terms of use.
-    validation messages:
-      minlength: |
-        You cannot continue unless you agree to the terms of use.        
-continue button field: al_intro_screen
-terms:
-  green words: |
-    Green words are legal terms or a short way of referring to something that needs more explanation. The definition or explanation pops up when you tap the green words. 
----
 comment: |
   This question is used to introduce your interview. Please customize
 id: Notice_of_Hearing_and_Petition_for_Expungement
@@ -241,10 +193,8 @@ subquestion: |
   Minnesota Judicial Branch website at <a href="https://www.mncourts.gov/" title="https://www.mncourts.gov">www.mncourts.gov</a> under HelpTopics / Criminal 
   Expungement. Contact a <a href="https://www.mncourts.gov/selfhelp" title="Self-Help Center">Self-Help Center</a> if you have questions about these instructions or the criminal expungement process. 
 section: EXP102_intro
-#field: sees_nav_bar
 ---
 id: Instructions
-continue button field: Instructions
 question: |
   Instructions
 subquestion: |
@@ -339,8 +289,9 @@ fields:
       - I understand and wish to continue
     validation messages:
       minlength: |
-        You cannot continue unless you confirm that you have read the information above.        
+        You cannot continue unless you confirm that you have read the information above.  
 section: i_understand
+#continue button field: Instructions
 ---
 id: Defendent Name
 Continue button field: defendent_name
@@ -389,7 +340,6 @@ question: |
 fields:
   - "Birthdate": users[0].birthdate
     datatype: BirthDate
-    #min: "01-01-1920"
     max: ${ today() }
 section: birthdate
 ---
@@ -404,6 +354,22 @@ subquestion: |
 fields:
    - "County": trial_court_county_1
      code: sorted(the_courts.county_list())
+     maxlength: 37
+   - "Judicial District": trial_court_district
+     hint: e.g. 1st
+     help: |
+       There are 10 judicial districts in Minnesota.
+       **1st**: McLeod, Sibley, Carver, Scott, Dakota, Le Sueur, Goodhue
+       **2nd**: Ramsey    
+       **3rd**: Rice, Waseca, Steele, Dodge, Olmsted, Wabasha, Winona, Freeborn, Mower, Fillmore, Houston
+       **4th**: Hennepin
+       **5th**: Lincoln, Lyon, Redwood, Brown, Nicollet, Pipestone, Murray, Cottonwood, Watonwan, Blue Earth, Rock, Nobles, Jackson, Martin, Faribault
+       **6th**: St. Louis, Lake, Cook, Carlton
+       **7th**: Clay, Becker, Otter Tail, Wadena, Douglas, Todd, Morrison, Mille Lacs, Stearns, Benton
+       **8th**: Wilkin, Grant, Traverse, Big Stone, Stevens, Pope, Swift, Lac qui Parle, Kandiyohi, Chippewa, Meeker, Yellow Medicine, Renville
+       **9th**: Kittson, Roseau, Lake of the Woods, Marshall, Beltrami, Koochiching, Pennington, Red Lake, Poke, Clearwater, Norman, Mahnomen, Hubbard, Cass, Itasca, Crow Wing, Aitkin
+       **10th**: Pine, Kanabec, Sherburne, Isanti, Chisago, Anoka, Wright, Washington
+     maxlength: 21
    - "Court File Number": docket_number
      maxlength: 21
    - "Hearing date": hearing_date
@@ -461,7 +427,7 @@ continue button field: address
 sets:
   - users[0].address.address
   - users[0].address.city
-  - users[0].address.postal_code
+  - users[0].address.zip
   - users[0].address.unit
   - users[0].address.state
   - users[0].address.country
@@ -477,7 +443,7 @@ code: |
   location[i].unit
   location[i].city
   location[i].state
-  location[i].postal_code
+  location[i].zip
   location[i].complete = True
 ---
 id: Prior Address
@@ -776,8 +742,6 @@ fields:
       - Warning Subject of Surveillance or Search
       - Wildfire Arson
       - Wrongful Employment at a Child Care Center
-    #code: |
-     # sorted(DAList.using(filename="crime_types.xlsx"))
   - Offense date: criminal_history[i].offense_date_1
     datatype: date
     max: ${ today() }
@@ -918,6 +882,7 @@ fields:
   - "I request that if expungement is ordered, each agency and jurisdiction that receives the order must send a letter to me at the address provided confirming receipt of the expungement order and that the record has been expunged": is_receipt_requested
     datatype: yesno
 section: additional_requests
+# Assembly Line code insert of court and contact info. here
 ---
 code: |
   if the_courts.county_has_one_court(the_county):
@@ -929,7 +894,7 @@ code: |
 id: Filing Court
 continue button field: filing_court
 question: |
-  What county do you want to file in?
+  What court do you want to file in?
 fields:
   - Pick a court: the_county
     code: sorted(the_courts.county_list())
