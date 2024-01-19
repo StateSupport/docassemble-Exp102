@@ -175,7 +175,7 @@ code: |
   EXP102_preview_question
   basic_questions_signature_flow    
   users[0].signature
-  EXP102_download
+  EXP102_Notice_of_Hearing_and_Petition_for_crim_expungement_download
 ---
 comment: |
   This question is used to introduce your interview. Please customize
@@ -195,6 +195,7 @@ subquestion: |
 section: EXP102_intro
 ---
 id: Instructions
+continue button field: Instructions
 question: |
   Instructions
 subquestion: |
@@ -1303,11 +1304,11 @@ progress: 100
 ---
 objects:
   - EXP102_post_interview_instructions: ALDocument.using(title="Instructions", filename="EXP102_next_steps.docx", enabled=True, has_addendum=False, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
-  - EXP102_attachment: ALDocument.using(title="Notice of Hearing and Petition for Expungement", filename="EXP102.pdf", enabled=True, has_addendum=True, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
+  - EXP102_attachment: ALDocument.using(title="Notice of Hearing and Petition for Expungement", filename="EXP102_Notice_of_Hearing_and_Petition_for_crim_expungement.pdf", enabled=True, has_addendum=True, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
 ---
 objects:
-  - al_user_bundle: ALDocumentBundle.using(elements=[EXP102_post_interview_instructions,EXP102_attachment], filename="EXP102.pdf_package.pdf", title="All forms to download for your records", enabled=True)
-  - al_court_bundle: ALDocumentBundle.using(elements=[EXP102_attachment], filename="EXP102.pdf_package.pdf", title="All forms to download for your records", enabled=True)
+  - al_user_bundle: ALDocumentBundle.using(elements=[EXP102_post_interview_instructions,EXP102_attachment], filename="EXP102_Notice_of_Hearing_and_Petition_for_crim_expungement.pdf_package.pdf", title="All forms to download for your records", enabled=True)
+  - al_court_bundle: ALDocumentBundle.using(elements=[EXP102_attachment], filename="EXP102_Notice_of_Hearing_and_Petition_for_crim_expungement.pdf_package.pdf", title="All forms to download for your records", enabled=True)
 ---
 attachments:
   - name: EXP102 post interview instructions
@@ -1316,10 +1317,10 @@ attachments:
     skip undefined: True
     docx template file: EXP102_next_steps.docx
   - name: EXP102 attachment
-    filename: EXP102.pdf     
+    filename: EXP102_Notice_of_Hearing_and_Petition_for_crim_expungement.pdf 
     variable name: EXP102_attachment[i]        
     skip undefined: True
-    pdf template file: EXP102.pdf
+    pdf template file: EXP102_Notice_of_Hearing_and_Petition_for_crim_expungement.pdf 
     fields:
       - "trial_court_district": |
           % if trial_court_county_1 in ["Carver", "Dakota", "Goodhue", "Le Sueur", "McLeod", "Scott", "Sibley", "Dakota"]:
