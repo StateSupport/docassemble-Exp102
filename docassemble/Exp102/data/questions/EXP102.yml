@@ -79,8 +79,6 @@ sections:
   - other_name: Additional Names
   - birthdate: Birthdate
   - notice_of_hearing: Notice of Hearing
-  - hearing_type: The Hearing will be Held by
-  - hearing_type_zoom: Remote Using Zoom
   - county_of_residence: County of Residence
   - address: Address
   - prior_address: Address History
@@ -119,12 +117,11 @@ code: |
   birthdate
   trial_court_county_1
   hearing_type
-  if hearing_type_zoom == True:
+  if "'hearing_type_zoom' in hearing_type":
     zoom_id
-  if zoom_id == True:
-    zoom_passcode
-  #if hearing_type_in_person == True:
-  #  trial_court_address_on_one_line
+  #this is still taking me to the zoom details page. need to fix this second part of the logic.
+  elif "'hearing_type_in_person' in hearing_type":
+    trial_court_address_on_one_line
   #if hearing_type_in_person == True:
   #  courtroom number
   county_of_residence
@@ -484,24 +481,45 @@ fields:
 section: notice_of_hearing
 ---
 id: hearing_type
-#continue button field: hearing_type
 question: |
-  The Hearing will be held:
-field: hearing_type
-choices:
-  - By Zoom
-  - In Person
-section: hearing_type
-#---
-#id: hearing_type_zoom
-#question: |
-#  Remote using Zoom 
-#subquestion: |
-#  See the “Remote Hearing Information” Help Topic online at <a href="www.mncourts.gov/Remote-Hearings.aspx" title="www.mncourts.gov/Remote-Hearings.aspx">www.mncourts.gov/Remote-Hearings.aspx</a>.)
-#fields:
-#  - "Zoom meeting ID:" zoom_id
-#  - "Passcode": zoom_passcode
-#section: hearing_type_zoom
+  The hearing will be:
+fields:
+  - no label: hearing_type
+    datatype: checkboxes
+    choices:
+      - By Zoom: hearing_type_zoom
+      - In Person: hearing_type_in_person
+    none of the above: False
+---
+id: zoom_details
+question: |
+  Zoom Hearing Details
+subquestion: |
+  Please enter the details for your Zoom hearing.
+fields:
+  - Zoom Meeting ID: zoom_id
+    datatype: text
+    show if: 
+      code: "'hearing_type_zoom' in hearing_type"
+  - Passcode: zoom_passcode
+    datatype: text
+    show if: 
+      code: "'hearing_type_zoom' in hearing_type"
+---
+id: in_person_details
+question: |
+  In-Person Hearing Details
+subquestion: |
+  Please enter the details for your in-person hearing.
+fields:
+  - Courthouse Address: trial_court_address_on_one_line
+    datatype: text
+    show if: 
+      code: "'hearing_type_in_person' in hearing_type"
+  - Courtroom Number: courtroom_number
+    datatype: text
+    show if: 
+      code: "'hearing_type_in_person' in hearing_type"
 ---
 id: County
 question: |
